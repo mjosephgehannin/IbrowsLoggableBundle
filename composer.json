@@ -1,0 +1,22 @@
+{
+    "name": "ibrows/loggable-bundle",
+    "type": "symfony-bundle",
+    "description": "Extended Loggable Bundle",
+    "keywords": ["LoggableBundle"],
+    "homepage": "http://www.ibrows.ch",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marc Steiner",
+            "homepage": "https://github.com/ibrows"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "stof/doctrine-extensions-bundle": "~1.1.0",
+        "symfony/symfony": "~2.1",
+    },
+    "autoload": {
+        "psr-4": { "Ibrows\\LoggableBundle\\": "" }
+    }
+}
