@@ -1,0 +1,17 @@
+<?php
+
+namespace Ibrows\LoggableBundle;
+
+use Ibrows\LoggableBundle\DependencyInjection\CompilerPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
+
+class IbrowsLoggableBundle extends Bundle
+{
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new CompilerPass());
+    }
+}
