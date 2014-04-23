@@ -34,10 +34,12 @@ class IbrowsLoggableExtension extends Extension
             || (!$r->isSubclassOf('Ibrows\LoggableBundle\Listener\LoggableListener')
                 && $loggableClass != 'Ibrows\LoggableBundle\Listener\LoggableListener')
         ) {
-            throw new \InvalidArgumentException('loggable listner must be subcloss of Ibrows\LoggableBundle\Listener\LoggableListener use:
+            throw new \InvalidArgumentException('loggable Listener must be subclass of Ibrows\LoggableBundle\Listener\LoggableListener use:
             stof_doctrine_extensions:
-                default:
-                  softdeleteable: true
+                orm:
+                    default:
+                      softdeleteable: true
+                      loggable: true
                 class:
                     loggable: Ibrows\LoggableBundle\Listener\LoggableListener
             ');
