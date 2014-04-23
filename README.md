@@ -41,3 +41,14 @@ Install & setup the bundle
     }
     ```
 
+4. Recommend config of stof_doctrine_extensions
+
+    ``` yml
+    stof_doctrine_extensions:
+        orm:
+            default:
+              softdeleteable: true
+              loggable: true
+        class:
+            loggable: Ibrows\LoggableBundle\Listener\LoggableListener
+    ```
