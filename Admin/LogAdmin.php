@@ -37,8 +37,8 @@ class LogAdmin extends Admin
         $mapper->add('action');
         $mapper->add('objectId');
         $mapper->add('objectClass');
-        $mapper->add('data');
-        $mapper->add('oldData');
+        $mapper->add('data','array');
+        $mapper->add('oldData','array');
         $mapper->add('loggedAt');
         $mapper->add('username');
     }
