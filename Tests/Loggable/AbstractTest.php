@@ -21,6 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 abstract class AbstractTest extends WebTestCase
 
 {
+    protected $abstractTestClass = 'Ibrows\LoggableBundle\Entity\AbstractLog';
     protected $testClass = 'Ibrows\LoggableBundle\Entity\Log';
     protected $testClassParent = 'Ibrows\LoggableBundle\Entity\LogParent';
     protected $testClassMany = 'Ibrows\LoggableBundle\Entity\LogMany2Many';
@@ -49,6 +50,11 @@ abstract class AbstractTest extends WebTestCase
      * @var LogRepository
      */
     protected $logrepo = null;
+
+    /**
+     * @var LogRepository
+     */
+    protected $mainlogrepo = null;
     /**
      * @var LogParentRepository
      */
@@ -67,6 +73,7 @@ abstract class AbstractTest extends WebTestCase
         $this->changeservice = $this->container->get('ibrows_loggable.changer');
         $this->logservice = $this->container->get('ibrows_loggable.logger');
         $this->em = $this->doctrine->getManager();
+        $this->mainlogrepo = $this->doctrine->getManagerForClass($this->abstractTestClass)->getRepository($this->abstractTestClass);
         $this->logrepo = $this->doctrine->getManagerForClass($this->testClass)->getRepository($this->testClass);
         $this->logrepoParent = $this->doctrine->getManagerForClass($this->testClass)->getRepository($this->testClassParent);
         $this->logrepoMany = $this->doctrine->getManagerForClass($this->testClass)->getRepository($this->testClassMany);
@@ -81,10 +88,10 @@ abstract class AbstractTest extends WebTestCase
 
     private function cleanDB()
     {
-        $this->logrepo->getLoggableListener()->setEnabled(false);
+        $this->mainlogrepo->getLoggableListener()->setEnabled(false);
         $this->doctrine->getConnection()->executeQuery('SET foreign_key_checks = 0');
         $this->doctrine->getManager()->getFilters()->disable('softdeleteable');
-        foreach ($this->logrepo->findAll() as $result) {
+        foreach ($this->mainlogrepo->findAll() as $result) {
             $this->doctrine->getManager()->remove($result);
         }
         $this->doctrine->getManager()->flush();
@@ -115,7 +122,7 @@ abstract class AbstractTest extends WebTestCase
         }
         $this->doctrine->getManager()->getFilters()->enable('softdeleteable');
         $this->doctrine->getConnection()->executeQuery('SET foreign_key_checks = 1');
-        $this->logrepo->getLoggableListener()->setEnabled(true);
+        $this->mainlogrepo->getLoggableListener()->setEnabled(true);
     }
 
 

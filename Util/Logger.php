@@ -88,6 +88,10 @@ class Logger
     }
 
 
+    public function getAllLogRepo(){
+        return $this->manager->getRepository($this->listener->getAbstractLogEntryClass());
+    }
+
     /**
      * @return  LogRepository
      */

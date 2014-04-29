@@ -1,13 +1,14 @@
 <?php
 namespace Ibrows\LoggableBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Ibrows\Bundle\SonataAdminAnnotationBundle\Annotation as Sonata;
 
 /**
  * @ORM\Entity(repositoryClass="Ibrows\LoggableBundle\Repository\LogParentRepository")
  */
-class LogParent extends Log
+class LogParent extends AbstractLog
 {
 
     /**
@@ -18,7 +19,8 @@ class LogParent extends Log
     protected $fieldName;
 
     public function __construct(){
-        parent::__construct();
+        $this->parents = new ArrayCollection();
+        $this->setLoggedAt();
         $this->version = 0;
     }
 

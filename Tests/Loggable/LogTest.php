@@ -28,7 +28,7 @@ class LogTest extends AbstractTest
         $user->addArticle($art0);
         $this->em->persist($user);
         $this->em->flush();
-        $logs = $this->logrepo->findAll();
+        $logs = $this->mainlogrepo->findAll();
         $this->assertCount(3, $logs);
         foreach ($logs as $log) {
             if ($log instanceof LogMany2Many) {
@@ -75,14 +75,14 @@ class LogTest extends AbstractTest
         $this->em->persist($art1);
         $this->em->persist($art2);
         $this->em->flush();
-        $logs = $this->logrepo->findAll();
+        $logs = $this->mainlogrepo->findAll();
         $this->assertCount(6, $logs);
         $user->addArticle($art0);
         $user->addArticle($art1);
         $this->em->flush();
-        $logs = $this->logrepo->findAll();
+        $logs = $this->mainlogrepo->findAll();
         $this->assertCount(8, $logs);
-        $logs = $this->logrepo->getLogsByObject($user);
+        $logs = $this->mainlogrepo->getLogsByObject($user);
         $this->assertCount(3, $logs);
         $manylog = array_pop($logs);
         $this->assertInstanceOf(get_class(new LogMany2Many()), $manylog);
@@ -221,7 +221,7 @@ class LogTest extends AbstractTest
         $comment->setMessage('Message');
         $this->em->persist($comment);
         $this->em->flush();
-        $logs = $this->logrepo->findAll();
+        $logs = $this->mainlogrepo->findAll();
         $this->assertCount(3, $logs);
         foreach ($logs as $log) {
             if ($log instanceof LogParent) {
@@ -250,7 +250,7 @@ class LogTest extends AbstractTest
 
     public function testEditMany2One()
     {
-        $this->assertCount(0, $this->logrepo->findAll());
+        $this->assertCount(0, $this->mainlogrepo->findAll());
         $art1 = new RelatedArticle();
         $art1->setTitle('Title');
         $art1->setContent('Content');
@@ -268,19 +268,19 @@ class LogTest extends AbstractTest
         $this->em->persist($comment);
         $this->em->persist($comment2);
         $this->em->flush();
-        $this->assertCount(4, $this->logrepo->findAll());
-        $this->assertCount(1, $this->logrepo->getLogsByObject($art1));
+        $this->assertCount(4, $this->mainlogrepo->findAll());
+        $this->assertCount(1, $this->mainlogrepo->getLogsByObject($art1));
         $comment->setArticle($art1);
         $this->em->flush();
-        $logs = $this->logrepo->findAll();
+        $logs = $this->mainlogrepo->findAll();
         $this->assertCount(6, $logs);
-        $logs = $this->logrepo->getLogsByObject($art1);
+        $logs = $this->mainlogrepo->getLogsByObject($art1);
         $this->assertCount(2, $logs);
         $comment->setArticle(null);
         $this->em->flush();
-        $logs = $this->logrepo->findAll();
+        $logs = $this->mainlogrepo->findAll();
         $this->assertCount(8, $logs);
-        $logs = $this->logrepo->getLogsByObject($art1);
+        $logs = $this->mainlogrepo->getLogsByObject($art1);
         $this->assertCount(3, $logs);
         $parentlog = array_pop($logs);
         $this->assertEquals($parentlog->getAction(), LoggableListener::ACTION_REMOVE);

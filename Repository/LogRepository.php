@@ -17,7 +17,7 @@ class LogRepository extends EntityRepository
 
     protected $searchChild = true;
     protected $searchOnlyChild = false;
-    protected $forcePartialLoad = true;
+    protected $forcePartialLoad = false;
 
     public function getLogsByObject($object, $offset = null, $limit = null)
     {
@@ -91,11 +91,11 @@ class LogRepository extends EntityRepository
 
     public function prepare(array $logs)
     {
-        foreach ($logs as $log) {
-            if (method_exists($log, 'getChildLog')) {
-                $this->_em->refresh($log);
-            }
-        }
+//        foreach ($logs as $log) {
+//            if (method_exists($log, 'getChildLog')) {
+//                $this->_em->refresh($log);
+//            }
+//        }
 
         return $logs;
     }

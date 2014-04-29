@@ -37,6 +37,10 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
     /**
      * @var string
      */
+    protected $abstractLogEntryClass = 'Ibrows\LoggableBundle\Entity\AbstractLog';
+    /**
+     * @var string
+     */
     protected $defaultLogEntryClass = 'Ibrows\LoggableBundle\Entity\Log';
     /**
      * @var string
@@ -340,6 +344,22 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         $this->enabled = $enabled;
 
         return $this;
+    }
+
+    /**
+     * @param string $abstractLogEntryClass
+     */
+    public function setAbstractLogEntryClass($abstractLogEntryClass)
+    {
+        $this->abstractLogEntryClass = $abstractLogEntryClass;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAbstractLogEntryClass()
+    {
+        return $this->abstractLogEntryClass;
     }
 
     /**

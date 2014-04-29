@@ -1,17 +1,19 @@
 <?php
 namespace Ibrows\LoggableBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Ibrows\Bundle\SonataAdminAnnotationBundle\Annotation as Sonata;
 
 /**
  * @ORM\Entity(repositoryClass="Ibrows\LoggableBundle\Repository\LogMany2ManyRepository")
  */
-class LogMany2Many extends Log
+class LogMany2Many extends AbstractLog
 {
 
     public function __construct(){
-        parent::__construct();
+        $this->parents = new ArrayCollection();
+        $this->setLoggedAt();
         $this->version = 0;
     }
 
