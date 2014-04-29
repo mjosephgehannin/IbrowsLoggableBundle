@@ -14,6 +14,7 @@ use Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity\Comment;
 use Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity\RelatedArticle;
 use Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Validator\Constraints\DateTime;
 
 class LogTest extends AbstractTest
 {
@@ -138,14 +139,18 @@ class LogTest extends AbstractTest
 
     public function testEdit()
     {
+        $dt1 = new \DateTime('01.01.2000');
+        $dt2 = new \DateTime('01.01.2001');
         $this->assertCount(0, $this->logrepo->findAll());
         $art0 = new Article();
+        $art0->setSomeDate($dt1);
         $art0->setTitle('Title');
         $this->em->persist($art0);
         $this->em->flush();
         $logs = $this->logrepo->findAll();
         $this->assertCount(1, $logs);
         $art0->setTitle('Title2');
+        $art0->setSomeDate($dt2);
         $this->em->persist($art0);
         $this->em->flush();
         $logs = $this->logrepo->findAll();
@@ -155,10 +160,15 @@ class LogTest extends AbstractTest
         $dataold = $log->getOldData();
         $this->assertEquals($log->getObjectId(), $art0->getId());
         $this->assertEquals($log->getObjectClass(), get_class($art0));
+
         $this->assertArrayHasKey('title', $data);
         $this->assertEquals('Title2', $data['title']);
         $this->assertArrayHasKey('title', $dataold);
         $this->assertEquals('Title', $dataold['title']);
+        $this->assertArrayHasKey('someDate', $data);
+        $this->assertEquals($dt2, $data['someDate']);
+        $this->assertArrayHasKey('someDate', $dataold);
+        $this->assertEquals($dt1, $dataold['someDate']);
 
     }
     public function testHistoricalView()

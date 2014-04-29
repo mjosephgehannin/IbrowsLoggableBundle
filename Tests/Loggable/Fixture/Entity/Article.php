@@ -31,6 +31,11 @@ class Article implements ScheduledChangeable
     private $deletedAt;
 
     /**
+     * @var $someDate \DateTime
+     * @ORM\Column(name="some_date", type="datetime", nullable=true)
+     */
+    private $someDate;
+    /**
      * @var $scheduledChangeDate \DateTime
      */
     private $scheduledChangeDate;
@@ -64,6 +69,22 @@ class Article implements ScheduledChangeable
     public function setTitle($title)
     {
         $this->title = $title;
+    }
+
+    /**
+     * @param \DateTime $someDate
+     */
+    public function setSomeDate($someDate)
+    {
+        $this->someDate = $someDate;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getSomeDate()
+    {
+        return $this->someDate;
     }
 
     /**
