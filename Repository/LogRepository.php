@@ -109,8 +109,9 @@ class LogRepository extends EntityRepository
     /**
      * @param object $object
      * @param DateTime $date
-     * @return object
+     * @param bool $clone
      * @throws \Gedmo\Exception\UnexpectedValueException
+     * @return object
      */
     public function historicalView($object, \DateTime $date, $clone = true)
     {
@@ -123,6 +124,29 @@ class LogRepository extends EntityRepository
         if (!$logs) {
             throw new \Gedmo\Exception\UnexpectedValueException('Could not find any log entries: '.$date->format('c'));
         }
+        // be sure not persist object automatic
+        $this->_em->detach($object);
+        $wrapped = new EntityWrapper($object, $this->_em);
+
+        while (($log = array_pop($logs))) {
+            $this->revertObjectBySingleLog($log, $wrapped);
+        }
+
+        return $wrapped->getObject();
+    }
+
+    /**
+     * @param object $object
+     * @param DateTime $date
+     * @return object
+     */
+    public function getObjectOnDate($object, \DateTime $date)
+    {
+        $object = clone $object;
+
+        $metaData = $this->getClassAndId($object);
+        $logs = $this->findLogs($metaData['id'],$metaData['class'],null, $date);
+
         // be sure not persist object automatic
         $this->_em->detach($object);
         $wrapped = new EntityWrapper($object, $this->_em);
