@@ -100,8 +100,18 @@ class LogRepository extends EntityRepository
         return $logs;
     }
 
-    public function historicalView($object, \DateTime $date)
+    /**
+     * @param object $object
+     * @param DateTime $date
+     * @return object
+     * @throws \Gedmo\Exception\UnexpectedValueException
+     */
+    public function historicalView($object, \DateTime $date, $clone = true)
     {
+        if(true === $clone){
+            $object = clone $object;
+        }
+
         $metaData = $this->getClassAndId($object);
         $logs = $this->findLogs($metaData['id'],$metaData['class'],null, $date);
         if (!$logs) {
