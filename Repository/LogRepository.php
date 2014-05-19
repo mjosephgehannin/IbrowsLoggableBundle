@@ -6,6 +6,7 @@ use DateTime;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Gedmo\SoftDeleteable\SoftDeleteableListener;
 use Gedmo\Tool\Wrapper\AbstractWrapper;
 use Gedmo\Tool\Wrapper\EntityWrapper;
@@ -56,6 +57,11 @@ class LogRepository extends EntityRepository
         return $this->prepare($logs);
     }
 
+    /**
+     * @param array $classesids
+     * @return QueryBuilder
+     * @throws \Exception
+     */
     protected function getQB(array $classesids)
     {
         if (!$this->searchChild && $this->searchOnlyChild) {
