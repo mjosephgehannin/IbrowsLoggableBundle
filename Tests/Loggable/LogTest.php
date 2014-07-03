@@ -208,15 +208,17 @@ class LogTest extends AbstractTest
         $this->em->remove($art0);
         $this->em->flush();
         $logs = $this->logrepo->findAll();
-        $this->assertCount(2, $logs);
-        $log = array_pop($logs);
-        $data = $log->getData();
-        $dataold = $log->getOldData();
-        $this->assertEquals($log->getObjectId(), $artid);
-        $this->assertEquals($log->getObjectClass(), get_class($art0));
-        $this->assertEquals($log->getAction(), LoggableListener::ACTION_REMOVE);
-        $this->assertNull($data);
-        $this->assertNull($dataold);
+        $this->assertCount(1, $logs);
+        //removing want be logged...
+//        $this->assertCount(2, $logs);
+//        $log = array_pop($logs);
+//        $data = $log->getData();
+//        $dataold = $log->getOldData();
+//        $this->assertEquals($log->getObjectId(), $artid);
+//        $this->assertEquals($log->getObjectClass(), get_class($art0));
+//        $this->assertEquals($log->getAction(), LoggableListener::ACTION_REMOVE);
+//        $this->assertNull($data);
+//        $this->assertNull($dataold);
     }
 
     public function testCreateMany2One()
@@ -328,12 +330,14 @@ class LogTest extends AbstractTest
         $art0 = $this->em->find($artclass, $artid);
         $this->assertNull($art0);
         $logs = $this->logrepo->findAll();
-        $this->assertCount(2, $logs);
-        $log = array_pop($logs);
-        $this->assertEquals($log->getAction(), LoggableListener::ACTION_REMOVE);
-        $this->logrepo->revertTo($log);
-        $art0 = $this->em->find($artclass, $artid);
-        $this->assertNotNull($art0);
+        $this->assertCount(1, $logs);
+        //use softdelete to remove and un-remove
+//        $this->assertCount(2, $logs);
+//        $log = array_pop($logs);
+//        $this->assertEquals($log->getAction(), LoggableListener::ACTION_REMOVE);
+//        $this->logrepo->revertTo($log);
+//        $art0 = $this->em->find($artclass, $artid);
+//        $this->assertNotNull($art0);
 
 
     }
