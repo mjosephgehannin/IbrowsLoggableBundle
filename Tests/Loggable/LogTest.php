@@ -19,6 +19,37 @@ use Symfony\Component\Validator\Constraints\DateTime;
 class LogTest extends AbstractTest
 {
 
+    public function testClone(){
+        //create
+        $this->assertCount(0, $this->logrepo->findAll());
+        $art0 = new Article();
+        $art0->setTitle('Title');
+        $this->em->persist($art0);
+        $this->em->flush();
+        $logs = $this->logrepo->findAll();
+        $this->assertCount(1, $logs);
+        $log = array_shift($logs);
+        $data = $log->getData();
+        $this->assertEquals($log->getObjectId(), $art0->getId());
+        $this->assertEquals($log->getObjectClass(), get_class($art0));
+        $this->assertArrayHasKey('title', $data);
+        $this->assertEquals('Title', $data['title']);
+
+        //clone
+        $art1 = clone $art0;
+        $this->em->persist($art1);
+        $this->em->flush();
+        $logs = $this->logrepo->findAll();
+        $this->assertCount(2, $logs);
+        $log = array_pop($logs);
+        $data = $log->getData();
+        $this->assertEquals($log->getObjectId(), $art1->getId());
+        $this->assertEquals($log->getObjectClass(), get_class($art1));
+        $this->assertArrayHasKey('title', $data);
+        $this->assertEquals('Title', $data['title']);
+
+    }
+
     public function testCreateMany2Many()
     {
         $this->assertCount(0, $this->logrepo->findAll());

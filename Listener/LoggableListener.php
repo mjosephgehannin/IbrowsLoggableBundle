@@ -138,19 +138,17 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         if (!$config && !$this->defaultAllVersioned) {
             return;
         }
-
         $logEntry = $this->newLogEntry($ea, $meta->name, $action);
 
 
-        // check for the availability of the primary key
-        $objectId = $wrapped->getIdentifier();
+
         if ($action === self::ACTION_CREATE && $ea->isPostInsertGenerator($meta)) {
             $this->pendingLogEntryInserts[spl_object_hash($object)] = $logEntry;
         } else {
             $logEntry->setObjectId($wrapped->getIdentifier());
         }
+
         $uow = $om->getUnitOfWork();
-        $logEntry->setObjectId($objectId);
         $newValues = array();
         $oldValues = array();
 
