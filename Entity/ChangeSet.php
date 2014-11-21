@@ -13,9 +13,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Table(
  *     name="changeset",
  *  indexes={
- *      @ORM\index(name="log_class_lookup_idx", columns={"object_class"}),
- *      @ORM\index(name="log_date_lookup_idx", columns={"change_at"}),
- *      @ORM\index(name="log_user_lookup_idx", columns={"username"})
+ *      @ORM\index(name="log_change_class_lookup_idx", columns={"object_class"}),
+ *      @ORM\index(name="log_change_date_lookup_idx", columns={"change_at"}),
+ *      @ORM\index(name="log_change_user_lookup_idx", columns={"username"})
  *  }
  * )
  */
