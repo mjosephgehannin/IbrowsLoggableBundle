@@ -158,7 +158,7 @@ class LogRepository extends EntityRepository
         return $wrapped->getObject();
     }
 
-    protected function findLogs($objectId, $objectClass, $version = null, $loggedAt = null)
+    public function findLogs($objectId, $objectClass, $version = null, $loggedAt = null)
     {
         $meta = $this->getClassMetadata();
         $dql = "SELECT log FROM {$meta->name} log";
