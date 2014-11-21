@@ -5,7 +5,7 @@
     "keywords": [
         "ibrows",
         "symfony2",
-        "bundle"
+        "bundle",
         "loggable",
         "behaviors",
         "doctrine2",
