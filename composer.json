@@ -2,7 +2,17 @@
     "name": "ibrows/loggable-bundle",
     "type": "symfony-bundle",
     "description": "Extended Loggable Bundle",
-    "keywords": ["LoggableBundle"],
+    "keywords": [
+        "ibrows",
+        "symfony2",
+        "bundle"
+        "loggable",
+        "behaviors",
+        "doctrine2",
+        "extensions",
+        "gedmo",
+        "LoggableBundle"
+    ],
     "homepage": "http://www.ibrows.ch",
     "license": "MIT",
     "authors": [
