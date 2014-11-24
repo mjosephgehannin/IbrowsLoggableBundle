@@ -158,9 +158,17 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 if (isset($config['versioned']) && !in_array($field, $config['versioned'])) {
                     continue;
                 }
-                if ($changes[1] == $changes[0]) {
-                    continue;
+                if(is_object($changes[1]) && is_object($changes[0])){
+                    // use === if both an object
+                    if ($changes[1] === $changes[0]) {
+                        continue;
+                    }
+                }else{
+                    if ($changes[1] == $changes[0]) {
+                        continue;
+                    }
                 }
+
 
                 $value = $changes[1];
                 $oldValue = $changes[0];
