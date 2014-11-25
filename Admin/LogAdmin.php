@@ -29,6 +29,7 @@ class LogAdmin extends Admin
         $mapper->add('objectClass');
         $mapper->add('loggedAt');
         $mapper->add('username');
+        $mapper->add('sourceUsername');
     }
 
     protected function configureShowFields(ShowMapper $mapper)
@@ -41,6 +42,7 @@ class LogAdmin extends Admin
         $mapper->add('oldData','array');
         $mapper->add('loggedAt');
         $mapper->add('username');
+        $mapper->add('sourceUsername');
     }
 
     protected function configureDatagridFilters(DatagridMapper $filter)
@@ -48,6 +50,7 @@ class LogAdmin extends Admin
         $filter->add('objectClass');
         $filter->add('objectId', 'doctrine_orm_number', array(), 'text', array());
         $filter->add('username');
+        $filter->add('sourceUsername');
     }
 
 
