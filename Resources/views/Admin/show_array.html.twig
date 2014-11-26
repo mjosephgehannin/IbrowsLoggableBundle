@@ -1,0 +1,42 @@
+{#
+
+This file is part of the Sonata package.
+
+(c) Thomas Rabaix <thomas.rabaix@sonata-project.org>
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+
+#}
+
+{% extends 'SonataAdminBundle:CRUD:base_show_field.html.twig' %}
+
+{% block field %}
+    {% import _self as macros %}
+    {{ macros.keyvaluetable( value , field_description) }}
+{% endblock %}
+
+{% macro keyvaluetable(keyValueStore,field_description,level) %}
+    {% set level = 1 + level|default(0) %}
+    <table class="table table-striped table-bordered table-advance table-hover halfWidth level{{ level }}">
+        {% for key, value in keyValueStore %}
+            <tr>
+                <td>{{ key|trans }}</td>
+                <td>
+                    {% if value.date is defined and value.timezone is defined %}
+                        {{ value.date|date(field_description.options.format|default(null),value.timezone) }}
+                    {% elseif value is iterable %}
+                        {% import _self as macros %}
+                        {{ macros.keyvaluetable(value,field_description, level ) }}
+                    {% else %}
+                        {% if field_description.options.safe %}
+                            [{{ key }} => {{ value|raw }}]
+                        {% else %}
+                            [{{ key }} => {{ value }}]
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endmacro %}
