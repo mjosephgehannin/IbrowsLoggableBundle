@@ -74,6 +74,13 @@ abstract class AbstractLog extends AbstractLogModel
     protected $username;
 
     /**
+     * @var string $sourceUsername
+     *
+     * @ORM\Column(length=255, nullable=true)
+     */
+    protected $sourceUsername;
+
+    /**
      * @var integer $version
      *
      * @ORM\Column(type="integer")
@@ -169,5 +176,20 @@ abstract class AbstractLog extends AbstractLogModel
         $this->parents->add($parent);
     }
 
+    /**
+     * @return string
+     */
+    public function getSourceUsername()
+    {
+        return $this->sourceUsername;
+    }
+
+    /**
+     * @param string $sourceUsername
+     */
+    public function setSourceUsername($sourceUsername)
+    {
+        $this->sourceUsername = $sourceUsername;
+    }
 
 }

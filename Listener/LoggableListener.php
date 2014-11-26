@@ -11,6 +11,8 @@ use Ibrows\LoggableBundle\Entity\Log;
 use Ibrows\LoggableBundle\Entity\LogMany2Many;
 use Ibrows\LoggableBundle\Entity\LogParent;
 use Ibrows\LoggableBundle\Model\ScheduledChangeable;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Role\SwitchUserRole;
 
 /**
  * Class LoggableListener
@@ -51,6 +53,10 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
      */
     protected $logCollectionEntryClass = 'Ibrows\LoggableBundle\Entity\LogMany2Many';
 
+    /**
+     * @var string
+     */
+    protected $sourceUsername;
 
     /**
      * @param EventArgs $args
@@ -320,6 +326,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         $logEntry = new LogMany2Many();
         $logEntry->setAction($message);
         $logEntry->setUsername($this->username);
+        $logEntry->setSourceUsername($this->sourceUsername);
         $wrapped1 = AbstractWrapper::wrap($object, $om);
         $logEntry->setObjectClass($wrapped1->getMetadata()->name);
         $logEntry->setObjectId($wrapped1->getIdentifier());
@@ -533,6 +540,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         $logEntry = $logEntryMeta->newInstance();
         $logEntry->__construct();
         $logEntry->setUsername($this->username);
+        $logEntry->setSourceUsername($this->sourceUsername);
         $logEntry->setObjectClass($class);
         $logEntry->setLoggedAt();
         $logEntry->setAction($action);
@@ -553,6 +561,24 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
     }
 
     /**
+     * @param string|TokenInterface|object $username
+     */
+    public function setUsername($username)
+    {
+        parent::setUsername($username);
+
+        if(!$username instanceof TokenInterface){
+            return;
+        }
+
+        if(!$originalToken = $this->getOriginalToken($username)){
+            return;
+        }
+
+        $this->sourceUsername = $originalToken->getUsername();
+    }
+
+    /**
      * @param \Gedmo\Loggable\Mapping\Event\LoggableAdapter $ea
      * @param Log $logEntry
      * @param $object
@@ -566,6 +592,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         $parentLogEntry = new LogParent();
         $parentLogEntry->setAction($message);
         $parentLogEntry->setUsername($this->username);
+        $parentLogEntry->setSourceUsername($this->sourceUsername);
         $wrappedParent = AbstractWrapper::wrap($object, $om);
         $parentLogEntry->setObjectClass($wrappedParent->getMetadata()->name);
         $parentLogEntry->setObjectId($wrappedParent->getIdentifier());
@@ -584,5 +611,18 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         return $parentLogEntry;
     }
 
+    /**
+     * @param TokenInterface $token
+     * @return bool|TokenInterface
+     */
+    protected function getOriginalToken(TokenInterface $token)
+    {
+        foreach ($token->getRoles() as $role) {
+            if ($role instanceof SwitchUserRole) {
+                return $role->getSource();
+            }
+        }
 
+        return false;
+    }
 }
