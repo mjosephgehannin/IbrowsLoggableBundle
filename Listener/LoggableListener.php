@@ -2,6 +2,7 @@
 namespace Ibrows\LoggableBundle\Listener;
 
 use Doctrine\Common\EventArgs;
+use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\NoResultException;
 use Gedmo\Loggable\Mapping\Event\LoggableAdapter;
@@ -94,8 +95,29 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         }
 
     }
+    /**
+     * {@inheritdoc}
+     */
+    public function getSubscribedEvents()
+    {
+        return array(
+            'onClear',
+            'onFlush',
+            'loadClassMetadata',
+            'postPersist',
+        );
+    }
 
-
+    /**
+     * {@inheritdoc}
+     */
+    public function onClear(OnClearEventArgs $eventArgs)
+    {
+        if($eventArgs->clearsAllEntities()){
+            //there's never something pending if all cleared
+            $this->pendingParents = array();
+        }
+    }
     /**
      * @param EventArgs $eventArgs
      */
@@ -126,7 +148,6 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         foreach ($uow->getScheduledCollectionDeletions() as $collection) {
             $this->createMany2ManyLogEntry(self::ACTION_REMOVE, $collection, $ea);
         }
-
     }
 
     /**
