@@ -69,6 +69,7 @@ class LogRepository extends EntityRepository
         }
         $qb = $this->createQueryBuilder('log');
         $qb->orderBy('log.loggedAt', 'DESC');
+        $qb->addOrderBy('log.id', 'DESC');
         $counter = 0;
         foreach ($classesids as $class => $ids) {
             if (sizeof($ids) == 0) {
