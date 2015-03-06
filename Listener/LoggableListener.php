@@ -2,8 +2,10 @@
 namespace Ibrows\LoggableBundle\Listener;
 
 use Doctrine\Common\EventArgs;
-use Doctrine\ORM\Event\OnClearEventArgs;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Event\OnClearEventArgs;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\NoResultException;
 use Gedmo\Loggable\Mapping\Event\LoggableAdapter;
 use Gedmo\Tool\Wrapper\AbstractWrapper;
@@ -70,9 +72,11 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
 
 
         $ea = $this->getEventAdapter($args);
+        /** @var $ea */
         $object = $ea->getObject();
         $om = $ea->getObjectManager();
         $oid = spl_object_hash($object);
+        /** @var $om EntityManagerInterface */
         $uow = $om->getUnitOfWork();
 
 
@@ -82,6 +86,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
             foreach ($this->pendingParents[$oid] as $pending) {
                 $logEntry = $pending['log'];
                 $field = $pending['field'];
+                /** @var $logEntryMeta ClassMetadataInfo */
                 $logEntryMeta = $om->getClassMetadata(get_class($logEntry));
                 $logEntryMeta->getReflectionProperty($field)->setValue($logEntry, $id);
                 $uow->scheduleExtraUpdate(
@@ -97,6 +102,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         }
 
     }
+
     /**
      * {@inheritdoc}
      */
@@ -115,11 +121,12 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
      */
     public function onClear(OnClearEventArgs $eventArgs)
     {
-        if($eventArgs->clearsAllEntities()){
+        if ($eventArgs->clearsAllEntities()) {
             //there's never something pending if all cleared
             $this->pendingParents = array();
         }
     }
+
     /**
      * @param EventArgs $eventArgs
      */
@@ -131,6 +138,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
 
         $ea = $this->getEventAdapter($eventArgs);
         $om = $ea->getObjectManager();
+        /** @var $om EntityManagerInterface */
         $uow = $om->getUnitOfWork();
 
         foreach ($ea->getScheduledObjectInsertions($uow) as $object) {
@@ -153,12 +161,13 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
     }
 
     /**
-     * @param string $action
-     * @param object $object
+     * @param string          $action
+     * @param object          $object
      * @param LoggableAdapter $ea
      */
     protected function createLogEntry($action, $object, LoggableAdapter $ea)
     {
+        /** @var $om EntityManagerInterface */
         $om = $ea->getObjectManager();
         $wrapped = AbstractWrapper::wrap($object, $om);
         $meta = $wrapped->getMetadata();
@@ -168,7 +177,6 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
             return;
         }
         $logEntry = $this->newLogEntry($ea, $meta->name, $action);
-
 
 
         if ($action === self::ACTION_CREATE && $ea->isPostInsertGenerator($meta)) {
@@ -187,12 +195,12 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 if (isset($config['versioned']) && !in_array($field, $config['versioned'])) {
                     continue;
                 }
-                if(is_object($changes[1]) && is_object($changes[0])){
+                if (is_object($changes[1]) && is_object($changes[0])) {
                     // use === if both an object
                     if ($changes[1] === $changes[0]) {
                         continue;
                     }
-                }else{
+                } else {
                     if ($changes[1] == $changes[0]) {
                         continue;
                     }
@@ -224,7 +232,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                         $value = $wrappedAssoc->getIdentifier(false);
                         if (!is_array($value) && !$value) {
                             $this->pendingRelatedObjects[$oid][] = array(
-                                'log' => $logEntry,
+                                'log'   => $logEntry,
                                 'field' => $field
                             );
                         }
@@ -236,7 +244,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                         $oldValue = $wrappedAssoc->getIdentifier(false);
                         if (!is_array($oldValue) && !$oldValue) {
                             $this->pendingRelatedObjects[$oid][] = array(
-                                'log' => $logEntry,
+                                'log'   => $logEntry,
                                 'field' => $field
                             );
                         }
@@ -264,7 +272,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
             //dont save log if changeset added
             return;
         }
-        $this->setVersion($logEntry,$ea,$logEntryMeta,$wrapped,$action);
+        $this->setVersion($logEntry, $ea, $logEntryMeta, $wrapped, $action);
         $this->prePersistLogEntry($logEntry, $object);
 
         $om->persist($logEntry);
@@ -280,12 +288,13 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
 
     }
 
-    protected function setVersion(AbstractLogModel $logEntry,LoggableAdapter $ea, $logEntryMeta, WrapperInterface $wrapped, $action){
+    protected function setVersion(AbstractLogModel $logEntry, LoggableAdapter $ea, $logEntryMeta, WrapperInterface $wrapped, $action)
+    {
         $version = 1;
         if ($action !== self::ACTION_CREATE) {
             try {
                 $version = $ea->getNewVersion($logEntryMeta, $wrapped->getObject());
-            }catch (NoResultException $e){
+            } catch (NoResultException $e) {
                 $version = 1;
             }
         }
@@ -294,7 +303,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
 
     /**
      * @param LoggableAdapter $ea
-     * @param string $class
+     * @param string          $class
      * @return string
      */
     protected function getLogEntryClass(LoggableAdapter $ea, $class)
@@ -305,12 +314,13 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
     }
 
     /**
-     * @param $action
-     * @param $col
+     * @param                 $action
+     * @param                 $col
      * @param LoggableAdapter $ea
      */
     protected function createMany2ManyLogEntry($action, $col, LoggableAdapter $ea)
     {
+        /** @var $om EntityManagerInterface */
         $om = $ea->getObjectManager();
         $uow = $om->getUnitOfWork();
         $logs = array();
@@ -340,11 +350,11 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
     }
 
     /**
-     * @param \Gedmo\Loggable\Mapping\Event\LoggableAdapter $ea
-     * @param $object
-     * @param $object2
-     * @param $message
-     * @return \Ibrows\MedSuiteBundle\Entity\LogMany2Many
+     * @param LoggableAdapter                               $ea
+     * @param                                               $object
+     * @param                                               $object2
+     * @param                                               $message
+     * @return LogMany2Many
      */
     protected function newLogMany2Many(LoggableAdapter $ea, $object, $object2, $message)
     {
@@ -358,7 +368,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         $logEntry->setObjectClass($wrapped1->getMetadata()->name);
         $logEntry->setObjectId($wrapped1->getIdentifier());
         $this->pendingParents[spl_object_hash($object)][] = array(
-            'log' => $logEntry,
+            'log'   => $logEntry,
             'field' => 'objectId'
         );
         if ($object2 != null) {
@@ -366,11 +376,10 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
             $logEntry->setInverseClass($wrapped2->getMetadata()->name);
             $logEntry->setInverseId($wrapped2->getIdentifier());
             $this->pendingParents[spl_object_hash($object2)][] = array(
-                'log' => $logEntry,
+                'log'   => $logEntry,
                 'field' => 'childId'
             );
         }
-
 
         return $logEntry;
     }
@@ -467,16 +476,14 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
     }
 
 
-
     /**
-     * @param $object
-     * @param Log $logEntry
+     * @param                 $object
+     * @param Log             $logEntry
      * @param LoggableAdapter $ea
      * @return bool
      */
     protected function addChangeSet($object, Log $logEntry, LoggableAdapter $ea)
     {
-
         if (!$object instanceof ScheduledChangeable) {
             return false;
         }
@@ -495,14 +502,14 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         if ($logEntry->getAction() == self::ACTION_REMOVE) {
             //MANY_TO_ONE
             foreach ($meta->getAssociationMappings() as $associationMapping) {
-                if(  $associationMapping['type'] != \Doctrine\ORM\Mapping\ClassMetadata::MANY_TO_ONE ){
+                if ($associationMapping['type'] != \Doctrine\ORM\Mapping\ClassMetadata::MANY_TO_ONE) {
                     continue;
                 }
-                $one = $meta->getReflectionProperty($associationMapping['fieldName'])->getValue($object) ;
+                $one = $meta->getReflectionProperty($associationMapping['fieldName'])->getValue($object);
                 if (array_key_exists('inversedBy', $associationMapping)) {
                     $field = $associationMapping['inversedBy'];
                     $associationMeta = $om->getClassMetadata($associationMapping['targetEntity']);
-                    $associationMeta->getReflectionProperty($field)->getValue($one)->add($object) ;
+                    $associationMeta->getReflectionProperty($field)->getValue($one)->add($object);
                 }
             }
             $om->persist($object);
@@ -557,14 +564,16 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
 
     /**
      * @param LoggableAdapter $ea
-     * @param $class
-     * @param $action
+     * @param                 $class
+     * @param                 $action
      * @return Log
      */
     protected function newLogEntry(LoggableAdapter $ea, $class, $action)
     {
         $logEntryMeta = $this->getLogEntryMeta($ea, $class);
+        /** @var $logEntry Log */
         $logEntry = $logEntryMeta->newInstance();
+
         $logEntry->__construct();
         $logEntry->setUsername($this->username);
         $logEntry->setSourceUsername($this->sourceUsername);
@@ -593,24 +602,21 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
     public function setUsername($username)
     {
         parent::setUsername($username);
-
-        if(!$username instanceof TokenInterface){
+        if (!$username instanceof TokenInterface) {
             return;
         }
-
-        if(!$originalToken = $this->getOriginalToken($username)){
+        if (!$originalToken = $this->getOriginalToken($username)) {
             return;
         }
-
         $this->sourceUsername = $originalToken->getUsername();
     }
 
     /**
-     * @param \Gedmo\Loggable\Mapping\Event\LoggableAdapter $ea
-     * @param Log $logEntry
-     * @param $object
-     * @param $message
-     * @return \Ibrows\MedSuiteBundle\Entity\LogParent
+     * @param LoggableAdapter $ea
+     * @param Log             $logEntry
+     * @param                 $object
+     * @param                 $message
+     * @return LogParent
      */
     protected function addLogParent(LoggableAdapter $ea, Log $logEntry, $object, $message, $childObject, $fieldName)
     {
@@ -627,11 +633,11 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         $logEntry->addParent($parentLogEntry);
 
         $this->pendingParents[spl_object_hash($object)][] = array(
-            'log' => $parentLogEntry,
+            'log'   => $parentLogEntry,
             'field' => 'objectId'
         );
         $this->pendingParents[spl_object_hash($childObject)][] = array(
-            'log' => $parentLogEntry,
+            'log'   => $parentLogEntry,
             'field' => 'childId'
         );
 
@@ -649,7 +655,6 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 return $role->getSource();
             }
         }
-
         return false;
     }
 }
