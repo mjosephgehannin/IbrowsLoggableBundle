@@ -7,10 +7,12 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\NoResultException;
 use Gedmo\Loggable\Mapping\Event\LoggableAdapter;
 use Gedmo\Tool\Wrapper\AbstractWrapper;
+use Gedmo\Tool\WrapperInterface;
 use Ibrows\LoggableBundle\Entity\ChangeSet;
 use Ibrows\LoggableBundle\Entity\Log;
 use Ibrows\LoggableBundle\Entity\LogMany2Many;
 use Ibrows\LoggableBundle\Entity\LogParent;
+use Ibrows\LoggableBundle\Model\AbstractLogModel;
 use Ibrows\LoggableBundle\Model\ScheduledChangeable;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\SwitchUserRole;
@@ -256,21 +258,13 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         }
 
 
-        $version = 1;
         $logEntryMeta = $this->getLogEntryMeta($ea, $meta->name);
-        if ($action !== self::ACTION_CREATE) {
-            try {
-                $version = $ea->getNewVersion($logEntryMeta, $object);
-            }catch (NoResultException $e){
-                $version = 1;
-            }
-        }
-        $logEntry->setVersion($version);
+
         if ($this->addChangeSet($object, $logEntry, $ea)) {
             //dont save log if changeset added
             return;
         }
-
+        $this->setVersion($logEntry,$ea,$logEntryMeta,$wrapped,$action);
         $this->prePersistLogEntry($logEntry, $object);
 
         $om->persist($logEntry);
@@ -284,6 +278,18 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         $uow->computeChangeSet($logEntryMeta, $logEntry);
 
 
+    }
+
+    protected function setVersion(AbstractLogModel $logEntry,LoggableAdapter $ea, $logEntryMeta, WrapperInterface $wrapped, $action){
+        $version = 1;
+        if ($action !== self::ACTION_CREATE) {
+            try {
+                $version = $ea->getNewVersion($logEntryMeta, $wrapped->getObject());
+            }catch (NoResultException $e){
+                $version = 1;
+            }
+        }
+        $logEntry->setVersion($version);
     }
 
     /**
