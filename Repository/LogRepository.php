@@ -74,13 +74,16 @@ class LogRepository extends EntityRepository
             if (sizeof($ids) == 0) {
                 continue;
             }
-            if(is_int($ids)){
+            if (is_int($ids)) {
                 $ids = array($ids);
             }
 
-            $ids = array_map(function($value){
+            $ids = array_map(
+                function ($value) {
                     return (string)"$value";
-                },$ids);
+                },
+                $ids
+            );
             $counter++;
             if (!$this->searchOnlyChild) {
                 $qb->orWhere(" log.objectId IN (:ids$counter) AND log.objectClass = :class$counter");
@@ -107,22 +110,22 @@ class LogRepository extends EntityRepository
     }
 
     /**
-     * @param object $object
+     * @param object   $object
      * @param DateTime $date
-     * @param bool $clone
+     * @param bool     $clone
      * @throws \Gedmo\Exception\UnexpectedValueException
      * @return object
      */
     public function historicalView($object, \DateTime $date, $clone = true)
     {
-        if(true === $clone){
+        if (true === $clone) {
             $object = clone $object;
         }
 
         $metaData = $this->getClassAndId($object);
-        $logs = $this->findLogs($metaData['id'],$metaData['class'],null, $date);
+        $logs = $this->findLogs($metaData['id'], $metaData['class'], null, $date);
         if (!$logs) {
-            throw new \Gedmo\Exception\UnexpectedValueException('Could not find any log entries: '.$date->format('c'));
+            throw new \Gedmo\Exception\UnexpectedValueException('Could not find any log entries: ' . $date->format('c'));
         }
         // be sure not persist object automatic
         $this->_em->detach($object);
@@ -136,7 +139,7 @@ class LogRepository extends EntityRepository
     }
 
     /**
-     * @param object $object
+     * @param object   $object
      * @param DateTime $date
      * @return object
      */
@@ -145,7 +148,7 @@ class LogRepository extends EntityRepository
         $object = clone $object;
 
         $metaData = $this->getClassAndId($object);
-        $logs = $this->findLogs($metaData['id'],$metaData['class'],null, $date);
+        $logs = $this->findLogs($metaData['id'], $metaData['class'], null, $date);
 
         // be sure not persist object automatic
         $this->_em->detach($object);
@@ -194,6 +197,10 @@ class LogRepository extends EntityRepository
                 $mapping = $objectMeta->getAssociationMapping($field);
                 $value = $value ? $this->_em->getReference($mapping['targetEntity'], $value) : null;
             }
+            if(is_array($value) && count($value) == 3 &&  array_key_exists('date',$value) &&  array_key_exists('timezone',$value)){
+                //check if look likes a DateTime
+                $value = new \DateTime($value['date'],new \DateTimeZone($value['timezone']));
+            }
             $wrapped->setPropertyValue($field, $value);
         }
 
@@ -211,31 +218,47 @@ class LogRepository extends EntityRepository
         $this->_em->getFilters()->enable('softdeleteable');
 
         $wrapped = new EntityWrapper($entity, $this->_em);
-        $objectMeta = $wrapped->getMetadata();
-        $logs = $this->findLogs($log->getObjectId(), $log->getObjectClass(), $log->getVersion());
+        $this->revertBy($log->getObjectId(), $log->getObjectClass(), $log->getVersion(), $wrapped, $softconfig['fieldName']);
+
+
+        return $wrapped->getObject();
+    }
+
+    public function revertBy($objectId, $objectClass, $version, EntityWrapper $wrapped, $softDeleteDateFieldName = null, $deleteHistory = true, $logRevert = false)
+    {
+        $logs = $this->findLogs($objectId, $objectClass, $version);
 
         if (!$logs) {
-            throw new \Gedmo\Exception\UnexpectedValueException('Could not find any log entries under version: ' . $log->getVersion());
+            throw new \Gedmo\Exception\UnexpectedValueException('Could not find any log entries under version: ' . $version);
         }
-        $this->getLoggableListener()->setEnabled(false);
+        if ($logRevert) {
+            $this->getLoggableListener()->setEnabled(false);
+        }
         while (($log = array_pop($logs))) {
             $action = $log->getAction();
             if ($action === 'create') {
-                $wrapped->setPropertyValue($softconfig['fieldName'], new \DateTime());
+                if (!$softDeleteDateFieldName) {
+                    throw new \Gedmo\Exception\UnexpectedValueException('Cant revert to create: you have to use softdeletable to use this feature');
+                }
+                $wrapped->setPropertyValue($softDeleteDateFieldName, new \DateTime());
             } else {
                 if ($action === 'remove') {
-                    $wrapped->setPropertyValue($softconfig['fieldName'], null);
+                    if (!$softDeleteDateFieldName) {
+                        throw new \Gedmo\Exception\UnexpectedValueException('Cant revert to create: you have to use softdeletable to use this feature');
+                    }
+                    $wrapped->setPropertyValue($softDeleteDateFieldName, null);
                 } else {
                     $this->revertObjectBySingleLog($log, $wrapped);
                 }
             }
-
-            $this->_em->remove($log);
+            if ($deleteHistory) {
+                $this->_em->remove($log);
+            }
             $this->_em->flush();
         }
-        $this->getLoggableListener()->setEnabled(true);
-
-        return $wrapped->getObject();
+        if ($logRevert) {
+            $this->getLoggableListener()->setEnabled(true);
+        }
     }
 
     /**
