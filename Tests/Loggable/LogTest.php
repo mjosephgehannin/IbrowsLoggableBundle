@@ -116,13 +116,13 @@ class LogTest extends AbstractTest
         $this->assertCount(8, $logs);
         $logs = $this->mainlogrepo->getLogsByObject($user);
         $this->assertCount(3, $logs);
-        $manylog = array_pop($logs);
+        $manylog = array_shift($logs);
         $this->assertInstanceOf(get_class(new LogMany2Many()), $manylog);
         $this->assertEquals($manylog->getInverseClass(), get_class($art1));
         $this->assertEquals($manylog->getInverseId(), $art1->getId());
         $this->assertEquals($manylog->getObjectClass(), get_class($user));
         $this->assertEquals($manylog->getObjectId(), $user->getId());
-        $manylog = array_pop($logs);
+        $manylog = array_shift($logs);
         $this->assertInstanceOf(get_class(new LogMany2Many()), $manylog);
         $this->assertEquals($manylog->getInverseClass(), get_class($art0));
         $this->assertEquals($manylog->getInverseId(), $art0->getId());
@@ -325,7 +325,7 @@ class LogTest extends AbstractTest
         $this->assertCount(8, $logs);
         $logs = $this->mainlogrepo->getLogsByObject($art1);
         $this->assertCount(3, $logs);
-        $parentlog = array_pop($logs);
+        $parentlog = array_shift($logs);
         $this->assertEquals($parentlog->getAction(), LoggableListener::ACTION_REMOVE);
         $this->assertEquals($parentlog->getChildClass(), get_class($comment));
         $this->assertEquals($parentlog->getChildId(), $comment->getId());
