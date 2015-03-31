@@ -252,10 +252,16 @@ class LogRepository extends EntityRepository
                     $this->revertObjectBySingleLog($log, $wrapped);
                 }
             }
-            if ($deleteHistory) {
-                $this->_em->remove($log);
-            }
             $this->_em->flush();
+            if ($deleteHistory) {
+                if (!$logRevert) {
+                    $this->getLoggableListener()->setEnabled(false);
+                }
+                $this->_em->remove($log);
+                if ($logRevert) {
+                    $this->getLoggableListener()->setEnabled(true);
+                }
+            }
         }
         if ($logRevert) {
             $this->getLoggableListener()->setEnabled(true);

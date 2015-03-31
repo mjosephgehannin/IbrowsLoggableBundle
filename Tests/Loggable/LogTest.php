@@ -341,27 +341,32 @@ class LogTest extends AbstractTest
         $art0->setTitle('Title');
         $this->em->persist($art0);
         $this->em->flush();
+
         $logs = $this->logrepo->findAll();
         $this->assertCount(1, $logs);
         $art0->setTitle('newTitle');
         $this->em->persist($art0);
         $this->em->flush();
         $this->em->clear();
+
         $logs = $this->logrepo->findAll();
         $this->assertCount(2, $logs);
         $log = array_pop($logs);
         $this->logrepo->revertTo($log);
+        $this->assertCount(1, $logs);
+
         $artclass = get_class($art0);
         $artid = $art0->getId();
         $art0 = $this->em->find($artclass, $artid);
         $this->assertEquals('Title', $art0->getTitle());
-
         $this->em->remove($art0);
         $this->em->flush();
+
         $art0 = $this->em->find($artclass, $artid);
         $this->assertNull($art0);
         $logs = $this->logrepo->findAll();
-        $this->assertCount(1, $logs);
+        $this->assertCount(2, $logs);
+        
         //use softdelete to remove and un-remove
 //        $this->assertCount(2, $logs);
 //        $log = array_pop($logs);
