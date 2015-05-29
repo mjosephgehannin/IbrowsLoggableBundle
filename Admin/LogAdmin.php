@@ -47,7 +47,21 @@ class LogAdmin extends Admin
 
     protected function configureDatagridFilters(DatagridMapper $filter)
     {
-        $filter->add('objectClass');
+        $filter->add('objectClass', 'doctrine_orm_callback',
+        array(
+            'callback' => function($queryBuilder, $alias, $field, $value) {
+                if (!$value['value']) {
+                    return;
+                }
+                // get some extra slashes for "double" escaping 
+                $value = addcslashes($value['value'], '\\');
+                var_dump($value);
+                $queryBuilder->andWhere("$alias.objectClass like :objectClass");
+                $queryBuilder->setParameter('objectClass', $value);
+                return true;
+            },
+            'field_type' => 'text'
+        ));
         $filter->add('objectId', 'doctrine_orm_number', array(), 'text', array());
         $filter->add('username');
         $filter->add('sourceUsername');
