@@ -1,8 +1,9 @@
 IbrowsLoggableBundle
 =============================
 
+Symfony2 Bundle that will track every Entity change on your Project and save it to a log table. Your Project get's some kind of confirmability with this Bundle.
 
-
+It also provide some methods to get back an entity to a earlier version.
 
 Install & setup the bundle
 --------------------------
