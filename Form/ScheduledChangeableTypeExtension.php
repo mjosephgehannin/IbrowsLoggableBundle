@@ -11,7 +11,7 @@ namespace Ibrows\LoggableBundle\Form;
 
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ScheduledChangeableTypeExtension extends AbstractTypeExtension
 {
@@ -43,11 +43,9 @@ class ScheduledChangeableTypeExtension extends AbstractTypeExtension
     }
 
     /**
-     * Add the image_path option
-     *
-     * @param OptionsResolverInterface $resolver
+     * @param OptionsResolver $resolver
      */
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array('scheduledchangeable' => 'auto'));
     }
@@ -62,11 +60,16 @@ class ScheduledChangeableTypeExtension extends AbstractTypeExtension
         return 'form';
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param string $property
+     * @return bool
+     */
     protected function checkIsScheduledChangeable(FormBuilderInterface $builder, $property)
     {
         $entity = $builder->getData();
         if ($entity == null || !is_object($entity) || (method_exists($entity,'getId') && $entity->getId() == null) )  {
-            return;
+            return false;
         }
         $class = get_class($entity);
         $reflectionClass = new \ReflectionClass($class);
