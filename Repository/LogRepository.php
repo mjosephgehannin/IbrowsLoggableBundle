@@ -226,13 +226,14 @@ class LogRepository extends EntityRepository
     }
 
     /**
+     * Revert a Entity identified by $objectId and $objectClass to a specific $version
      * @param               $objectId
      * @param               $objectClass
      * @param               $version
      * @param EntityWrapper $wrapped
      * @param null          $softDeleteDateFieldName
-     * @param bool          $deleteHistory
-     * @param bool          $logRevert
+     * @param bool          $deleteHistory if true, the revert will also delete all log entries since the reverted one
+     * @param bool          $logRevert if logRevert is true, the revert will be logged
      */
     public function revertBy($objectId, $objectClass, $version, EntityWrapper $wrapped, $softDeleteDateFieldName = null, $deleteHistory = true, $logRevert = false)
     {
