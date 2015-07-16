@@ -208,7 +208,18 @@ class LogRepository extends EntityRepository
         return true;
     }
 
-    public function revertTo(Log $log)
+    /**
+     * Revert a Entity identified by specific $log
+     * @param Log  $log
+     * @param bool $deleteHistory if true, the revert will also delete all log entries since the reverted one
+     * @param bool $logRevert if logRevert is true, the revert will be logged
+     * @return object
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \Exception
+     */
+    public function revertTo(Log $log, $deleteHistory = true, $logRevert = false)
     {
         $softconfig = $this->getSoftDeletableListener()->getConfiguration($this->_em, $log->getObjectClass());
         if (sizeof($softconfig) == 0) {
@@ -219,7 +230,7 @@ class LogRepository extends EntityRepository
         $this->_em->getFilters()->enable('softdeleteable');
 
         $wrapped = new EntityWrapper($entity, $this->_em);
-        $this->revertBy($log->getObjectId(), $log->getObjectClass(), $log->getVersion(), $wrapped, $softconfig['fieldName']);
+        $this->revertBy($log->getObjectId(), $log->getObjectClass(), $log->getVersion(), $wrapped, $softconfig['fieldName'],$deleteHistory,$logRevert);
 
 
         return $wrapped->getObject();
