@@ -225,6 +225,15 @@ class LogRepository extends EntityRepository
         return $wrapped->getObject();
     }
 
+    /**
+     * @param               $objectId
+     * @param               $objectClass
+     * @param               $version
+     * @param EntityWrapper $wrapped
+     * @param null          $softDeleteDateFieldName
+     * @param bool          $deleteHistory
+     * @param bool          $logRevert
+     */
     public function revertBy($objectId, $objectClass, $version, EntityWrapper $wrapped, $softDeleteDateFieldName = null, $deleteHistory = true, $logRevert = false)
     {
         $logs = $this->findLogs($objectId, $objectClass, $version);
@@ -232,7 +241,7 @@ class LogRepository extends EntityRepository
         if (!$logs) {
             throw new \Gedmo\Exception\UnexpectedValueException('Could not find any log entries under version: ' . $version);
         }
-        if ($logRevert) {
+        if (!$logRevert) {
             $this->getLoggableListener()->setEnabled(false);
         }
         while (($log = array_pop($logs))) {
@@ -254,7 +263,7 @@ class LogRepository extends EntityRepository
             }
             $this->_em->flush();
             if ($deleteHistory) {
-                if (!$logRevert) {
+                if ($logRevert) {
                     $this->getLoggableListener()->setEnabled(false);
                 }
                 $this->_em->remove($log);
@@ -263,7 +272,7 @@ class LogRepository extends EntityRepository
                 }
             }
         }
-        if ($logRevert) {
+        if (!$logRevert) {
             $this->getLoggableListener()->setEnabled(true);
         }
     }
