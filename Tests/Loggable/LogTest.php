@@ -362,7 +362,7 @@ class LogTest extends AbstractTest
         $this->em->remove($art0);
         $this->em->flush();
 
-        $art0 = $this->em->find($artclass, $artid);
+        $art0 = $this->em->getRepository($artclass)->findOneBy(array('id'=>$artid));
         $this->assertNull($art0);
         $logs = $this->logrepo->findAll();
         $this->assertCount(2, $logs);
