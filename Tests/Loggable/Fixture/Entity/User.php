@@ -5,6 +5,7 @@ namespace Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Ibrows\LoggableBundle\Model\ScheduledChangeabePartially;
 use Ibrows\LoggableBundle\Model\ScheduledChangeable;
 
 /**
@@ -12,7 +13,7 @@ use Ibrows\LoggableBundle\Model\ScheduledChangeable;
  * @ORM\Table(name="fix_user")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt")
  */
-class User implements ScheduledChangeable
+class User implements ScheduledChangeabePartially
 {
     /**
      * @var Article[]
@@ -33,6 +34,12 @@ class User implements ScheduledChangeable
      * @ORM\Column(name="title", type="string", length=8)
      */
     private $name;
+
+    /**
+     * @ORM\Column(name="company", type="string", length=100, nullable=true)
+     */
+    private $company;
+
     /**
      * @var $deletedAt \DateTime
      * @ORM\Column(name="deleted_at", type="datetime", nullable=true)
@@ -128,5 +135,30 @@ class User implements ScheduledChangeable
     {
         $this->name = $name;
     }
+
+    /**
+     * @return array
+     */
+    public function getFieldsToSchedule()
+    {
+        return array('name');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCompany()
+    {
+        return $this->company;
+    }
+
+    /**
+     * @param mixed $company
+     */
+    public function setCompany($company)
+    {
+        $this->company = $company;
+    }
+
 
 }

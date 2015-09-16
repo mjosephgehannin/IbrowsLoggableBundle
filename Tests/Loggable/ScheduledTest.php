@@ -8,6 +8,7 @@ use Ibrows\LoggableBundle\Repository\ChangeSetRepository;
 use Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity\Article;
 use Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity\Comment;
 use Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity\RelatedArticle;
+use Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -20,6 +21,43 @@ class ScheduledTest extends AbstractTest
      * @var ChangeSetRepository
      */
     protected $changeRepo = null;
+
+    public function testPartiallyUpdate()
+    {
+        $this->assertCount(0, $this->logrepo->findAll());
+        $user = new User();
+        $user->setName('firstName');
+        $user->setCompany('firstCompany');
+        $this->em->persist($user);
+        $this->em->flush();
+        $this->assertCount(1, $this->logrepo->findAll());
+        $this->assertEquals(array('name'), $user->getFieldsToSchedule());
+        $this->assertEquals('firstName', $user->getName());
+        $this->assertEquals('firstCompany', $user->getCompany());
+        $user->setName('firstName new');
+        $user->setCompany('firstCompany new');
+        $user->setScheduledChangeDate(new \DateTime("+ 100 days"));
+        $this->em->persist($user);
+        $this->em->flush();
+
+        $this->assertCount(2, $this->logrepo->findAll());
+        $this->assertEquals('firstName', $user->getName());
+        $this->assertEquals('firstCompany new', $user->getCompany());
+
+        $changes = $this->changeRepo->findAll();
+        $this->assertCount(1, $changes);
+        $change = array_pop($changes);
+        $data = $change->getData();
+        $dataold = $change->getOldData();
+        $this->assertEquals($change->getObjectId(), $user->getId());
+        $this->assertEquals($change->getObjectClass(), get_class($user));
+        $this->assertArrayHasKey('name', $data);
+        $this->assertEquals('firstName new', $data['name']);
+        $this->assertArrayNotHasKey('company', $data);
+        $this->assertArrayHasKey('name', $dataold);
+        $this->assertEquals('firstName', $dataold['name']);
+    }
+
 
     public function testDontEditDirect()
     {

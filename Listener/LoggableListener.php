@@ -15,6 +15,7 @@ use Ibrows\LoggableBundle\Entity\Log;
 use Ibrows\LoggableBundle\Entity\LogMany2Many;
 use Ibrows\LoggableBundle\Entity\LogParent;
 use Ibrows\LoggableBundle\Model\AbstractLogModel;
+use Ibrows\LoggableBundle\Model\ScheduledChangeabePartially;
 use Ibrows\LoggableBundle\Model\ScheduledChangeable;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\SwitchUserRole;
@@ -498,6 +499,8 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         $uow = $om->getUnitOfWork();
         $meta = $om->getClassMetadata(get_class($object));
         $hash = spl_object_hash($object);
+        $data = $logEntry->getData();
+        $oldData = $logEntry->getOldData();
 
         if ($logEntry->getAction() == self::ACTION_REMOVE) {
             //MANY_TO_ONE
@@ -530,7 +533,17 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 $uow->clearEntityChangeSet($hash);
             } else {
                 //  $undoSet = array();
+
+                $uow->clearEntityChangeSet($hash);
                 foreach ($logEntry->getOldData() as $field => $oldValue) {
+                    if($object instanceof ScheduledChangeabePartially && !in_array($field,$object->getFieldsToSchedule())){
+                        $value = null;
+                        if(isset($data[$field])){
+                            $value = $data[$field];
+                        }
+                        $uow->propertyChanged($object,$field,$oldValue,$value);
+                        continue;
+                    }
                     if ($meta->isSingleValuedAssociation($field)) {
                         $mapping = $meta->getAssociationMapping($field);
                         $oldValue = $oldValue ? $om->getReference($mapping['targetEntity'], $oldValue) : null;
@@ -539,27 +552,58 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                     $ea->setOriginalObjectProperty($uow, $hash, $field, $oldValue);
                     // $undoSet[$field] = array(null,$oldValue);
                 }
+
                 // $uow->scheduleExtraUpdate($object,$undoSet);
                 //   $changeSetMeta = $ea->getObjectManager()->getClassMetadata(get_class($object));
                 //   $uow->computeChangeSet($changeSetMeta, $object);
-                $uow->clearEntityChangeSet($hash);
+
+            }
+            if($object instanceof ScheduledChangeabePartially ){
+                $changeSetDataKeys = array_keys($uow->getEntityChangeSet($object));
+                if(sizeof($changeSetDataKeys)>0){
+                    //partial
+                    foreach($changeSetDataKeys as $field){
+                        unset($oldData[$field]);
+                        unset($data[$field]);
+                    }
+                    $logEntry->setData($data);
+                    $logEntry->setOldData($oldData);
+
+                    $changeSet = $this->createChangeSet($logEntry,$date);
+                    $om->persist($changeSet);
+                    $changeSetMeta = $ea->getObjectManager()->getClassMetadata(get_class($changeSet));
+                    $uow->computeChangeSet($changeSetMeta, $changeSet);
+                    
+                    //create log also
+                    return false;
+                }
             }
         }
 
-        $data = $logEntry->getData();
+
+        $changeSet = $this->createChangeSet($logEntry,$date);
+        $om->persist($changeSet);
+        $changeSetMeta = $ea->getObjectManager()->getClassMetadata(get_class($changeSet));
+        $uow->computeChangeSet($changeSetMeta, $changeSet);
+        return true;
+    }
+
+    /**
+     * @param Log       $logEntry
+     * @param \DateTime $date
+     * @return ChangeSet
+     */
+    private function createChangeSet(Log $logEntry, \DateTime $date){
         $changeSet = new ChangeSet();
         $changeSet->setChangeAt($date);
         $changeSet->setObjectId($logEntry->getObjectId());
         $changeSet->setObjectClass($logEntry->getObjectClass());
-        $changeSet->setData($data);
+        $changeSet->setData($logEntry->getData());
         $changeSet->setOldData($logEntry->getOldData());
         $changeSet->setUsername($logEntry->getUsername());
         $changeSet->setAction($logEntry->getAction());
-        $om->persist($changeSet);
-        $changeSetMeta = $ea->getObjectManager()->getClassMetadata(get_class($changeSet));
-        $uow->computeChangeSet($changeSetMeta, $changeSet);
+        return $changeSet;
 
-        return true;
     }
 
     /**
