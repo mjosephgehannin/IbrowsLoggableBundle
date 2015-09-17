@@ -533,7 +533,6 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 $uow->clearEntityChangeSet($hash);
             } else {
                 //  $undoSet = array();
-
                 $uow->clearEntityChangeSet($hash);
                 foreach ($logEntry->getOldData() as $field => $oldValue) {
                     if($object instanceof ScheduledChangeabePartially && !in_array($field,$object->getFieldsToSchedule())){
@@ -562,9 +561,11 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 $changeSetDataKeys = array_keys($uow->getEntityChangeSet($object));
                 if(sizeof($changeSetDataKeys)>0){
                     //partial
-                    foreach($changeSetDataKeys as $field){
-                        unset($oldData[$field]);
-                        unset($data[$field]);
+                    foreach($data as $key => $value){
+                        if(!in_array($key, $changeSetDataKeys)){
+                            unset($oldData[$key]);
+                            unset($data[$key]);
+                        }
                     }
                     $logEntry->setData($data);
                     $logEntry->setOldData($oldData);
