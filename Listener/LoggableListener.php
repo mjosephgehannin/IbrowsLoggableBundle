@@ -567,16 +567,27 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 $changeSetDataKeys = array_keys($uow->getEntityChangeSet($object));
                 if(sizeof($changeSetDataKeys)>0){
                     //partial
+                    $dataLog = $data;
+                    $dataLogOld = $oldData;
+                    $dataChangeSet = $data;
+                    $dataChangeSetOld = $oldData;
+                    
                     foreach($data as $key => $value){
                         if(!in_array($key, $changeSetDataKeys)){
-                            unset($oldData[$key]);
-                            unset($data[$key]);
+                            unset($dataLog[$key]);
+                            unset($dataLogOld[$key]);
                         }
                     }
-                    $logEntry->setData($data);
-                    $logEntry->setOldData($oldData);
+                    foreach($changeSetDataKeys as $field) {
+                        unset($dataChangeSet[$field]);
+                        unset($dataChangeSetOld[$field]);
+                    }
+                    $logEntry->setData($dataLog);
+                    $logEntry->setOldData($dataLogOld);
 
                     $changeSet = $this->createChangeSet($logEntry,$date);
+                    $changeSet->setData($dataChangeSet);
+                    $changeSet->setOldData($dataChangeSetOld);
                     $om->persist($changeSet);
                     $changeSetMeta = $ea->getObjectManager()->getClassMetadata(get_class($changeSet));
                     $uow->computeChangeSet($changeSetMeta, $changeSet);

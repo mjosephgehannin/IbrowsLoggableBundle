@@ -40,7 +40,8 @@ class ScheduledTest extends AbstractTest
         $this->em->persist($user);
         $this->em->flush();
 
-        $this->assertCount(2, $this->logrepo->findAll());
+        $logs = $this->logrepo->findAll();
+        $this->assertCount(2, $logs);
         $this->assertEquals('firstName', $user->getName());
         $this->assertEquals('firstCompany new', $user->getCompany());
 
@@ -56,6 +57,17 @@ class ScheduledTest extends AbstractTest
         $this->assertArrayNotHasKey('company', $data);
         $this->assertArrayHasKey('name', $dataold);
         $this->assertEquals('firstName', $dataold['name']);
+
+        $log = array_pop($logs);
+        $data = $log->getData();
+        $dataold = $log->getOldData();
+        $this->assertEquals($log->getObjectId(), $user->getId());
+        $this->assertEquals($log->getObjectClass(), get_class($user));
+        $this->assertArrayHasKey('company', $data);
+        $this->assertEquals('firstCompany new', $data['company']);
+        $this->assertArrayNotHasKey('name', $data);
+        $this->assertArrayHasKey('company', $dataold);
+        $this->assertEquals('firstCompany', $dataold['company']);
     }
 
 
