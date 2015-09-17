@@ -493,7 +493,13 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         if ($date == null) {
             return false;
         }
-
+        if ($object instanceof ScheduledChangeabePartially) {
+            $intersect = array_intersect( $object->getFieldsToSchedule(),array_keys($logEntry->getOldData()));
+            if(count($intersect)== 0){
+                //no fields changed that are changeable
+                return false;
+            }
+        }
         $om = $ea->getObjectManager();
         /* @var $om EntityManager */
         $uow = $om->getUnitOfWork();
