@@ -3,7 +3,7 @@
 namespace Ibrows\LoggableBundle\Model;
 
 
-interface ScheduledChangeabePartially extends ScheduledChangeable
+interface ScheduledChangeablePartially extends ScheduledChangeable
 {
     /**
      * @return array

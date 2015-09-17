@@ -15,7 +15,7 @@ use Ibrows\LoggableBundle\Entity\Log;
 use Ibrows\LoggableBundle\Entity\LogMany2Many;
 use Ibrows\LoggableBundle\Entity\LogParent;
 use Ibrows\LoggableBundle\Model\AbstractLogModel;
-use Ibrows\LoggableBundle\Model\ScheduledChangeabePartially;
+use Ibrows\LoggableBundle\Model\ScheduledChangeablePartially;
 use Ibrows\LoggableBundle\Model\ScheduledChangeable;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Role\SwitchUserRole;
@@ -493,7 +493,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
         if ($date == null) {
             return false;
         }
-        if ($object instanceof ScheduledChangeabePartially) {
+        if ($object instanceof ScheduledChangeablePartially) {
             $intersect = array_intersect( $object->getFieldsToSchedule(),array_keys($logEntry->getOldData()));
             if(count($intersect)== 0){
                 //no fields changed that are changeable
@@ -541,7 +541,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 //  $undoSet = array();
                 $uow->clearEntityChangeSet($hash);
                 foreach ($logEntry->getOldData() as $field => $oldValue) {
-                    if($object instanceof ScheduledChangeabePartially && !in_array($field,$object->getFieldsToSchedule())){
+                    if($object instanceof ScheduledChangeablePartially && !in_array($field,$object->getFieldsToSchedule())){
                         $value = null;
                         if(isset($data[$field])){
                             $value = $data[$field];
@@ -563,7 +563,7 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 //   $uow->computeChangeSet($changeSetMeta, $object);
 
             }
-            if($object instanceof ScheduledChangeabePartially ){
+            if($object instanceof ScheduledChangeablePartially ){
                 $changeSetDataKeys = array_keys($uow->getEntityChangeSet($object));
                 if(sizeof($changeSetDataKeys)>0){
                     //partial

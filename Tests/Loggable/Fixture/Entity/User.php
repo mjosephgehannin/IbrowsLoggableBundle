@@ -5,15 +5,14 @@ namespace Ibrows\LoggableBundle\Tests\Loggable\Fixture\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Ibrows\LoggableBundle\Model\ScheduledChangeabePartially;
-use Ibrows\LoggableBundle\Model\ScheduledChangeable;
+use Ibrows\LoggableBundle\Model\ScheduledChangeablePartially;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="fix_user")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt")
  */
-class User implements ScheduledChangeabePartially
+class User implements ScheduledChangeablePartially
 {
     /**
      * @var Article[]
