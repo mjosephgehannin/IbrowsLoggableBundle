@@ -26,6 +26,10 @@ class ScheduledChangeableTypeExtension extends AbstractTypeExtension
             return;
         }
 
+        $format = "yyyy-MM-dd";
+        if(isset($options['scheduledchangeable_format'])){
+            $format = $options['scheduledchangeable_format'];
+        }
 
         $propertyName = 'scheduledChangeDate';
         if ($options['scheduledchangeable'] === 'auto') {
@@ -38,7 +42,7 @@ class ScheduledChangeableTypeExtension extends AbstractTypeExtension
             }
         }
 
-        $builder->add($propertyName, 'date', array('widget' => 'single_text', 'format' => 'yyyy-MM-dd','required'=>false));
+        $builder->add($propertyName, 'date', array('widget' => 'single_text', 'format' => $format,'required'=>false));
 
     }
 
