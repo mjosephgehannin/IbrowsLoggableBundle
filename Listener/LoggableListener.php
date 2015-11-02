@@ -500,6 +500,8 @@ class LoggableListener extends \Gedmo\Loggable\LoggableListener
                 return false;
             }
         }
+        $object->removeScheduledChangeDate();
+
         $om = $ea->getObjectManager();
         /* @var $om EntityManager */
         $uow = $om->getUnitOfWork();
