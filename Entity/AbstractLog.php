@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *      @ORM\Index(name="log_child_id_lookup_idx", columns={"child_id"}),
  *      @ORM\Index(name="log_date_lookup_idx", columns={"logged_at"}),
  *      @ORM\Index(name="log_user_lookup_idx", columns={"username"}),
- *      @ORM\Index(name="log_version_lookup_max", columns={"object_class","object_id","version"})
+ *      @ORM\Index(name="log_version_lookup_max", columns={"object_class","object_id","dtype","version"})
  *  }
  * )
  */
