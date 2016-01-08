@@ -70,7 +70,9 @@ class ChangeSetRepository extends EntityRepository
                 $mapping = $objectMeta->getAssociationMapping($field);
                 $value = $value ? $this->_em->getReference($mapping['targetEntity'], $value) : null;
             }
-            $wrapped->setPropertyValue($field, $value);
+            if(property_exists($changeset->getObjectClass(),$field)){
+                $wrapped->setPropertyValue($field, $value);
+            }
         }
 
         if ($changeset->getObjectId() == null) {
