@@ -28,10 +28,5 @@
     },
     "autoload": {
         "psr-4": { "Ibrows\\LoggableBundle\\": "" }
-    },
-    "extra" : {
-        "branch-alias" : {
-            "dev-master" : "symfony28"
-        }
     }
 }
