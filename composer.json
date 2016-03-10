@@ -1,5 +1,5 @@
 {
-    "name": "ibrows/loggable-bundle",
+    "name": "ibrows/loggable-bundle/symfony28",
     "type": "symfony-bundle",
     "description": "Extended Loggable Bundle",
     "keywords": [
@@ -24,7 +24,7 @@
     "minimum-stability": "stable",
     "require": {
         "stof/doctrine-extensions-bundle": "^1.1.0",
-        "symfony/symfony": "~2.7"
+        "symfony/symfony": "~2.8"
     },
     "autoload": {
         "psr-4": { "Ibrows\\LoggableBundle\\": "" }
