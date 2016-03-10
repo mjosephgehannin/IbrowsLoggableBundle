@@ -1,5 +1,5 @@
 {
-    "name": "ibrows/loggable-bundle/symfony28",
+    "name": "ibrows/loggable-bundle-28",
     "type": "symfony-bundle",
     "description": "Extended Loggable Bundle",
     "keywords": [
