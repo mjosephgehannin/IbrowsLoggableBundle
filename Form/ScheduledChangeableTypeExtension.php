@@ -12,6 +12,7 @@ namespace Ibrows\LoggableBundle\Form;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FormType;
 
 class ScheduledChangeableTypeExtension extends AbstractTypeExtension
 {
@@ -61,7 +62,7 @@ class ScheduledChangeableTypeExtension extends AbstractTypeExtension
      */
     public function getExtendedType()
     {
-        return 'form';
+        return FormType::class;
     }
 
     /**

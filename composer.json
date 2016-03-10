@@ -28,5 +28,4 @@
     },
     "autoload": {
         "psr-4": { "Ibrows\\LoggableBundle\\": "" }
-    }
-}
+    } }

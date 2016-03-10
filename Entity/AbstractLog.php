@@ -33,7 +33,7 @@ abstract class AbstractLog extends AbstractLogModel
     /**
      * @var integer $id
      *
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="bigint")
      * @ORM\Id
      * @ORM\GeneratedValue
      */
